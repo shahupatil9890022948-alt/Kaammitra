@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Poppins } from "next/font/google";
 import type { ReactNode } from "react";
-import "@/app/globals.css";
+import "./globals.css";
 import { FloatingActions } from "@/components/floating-actions";
 import { PwaRegister } from "@/components/pwa-register";
 import { SiteFooter } from "@/components/site-footer";
