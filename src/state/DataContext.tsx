@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -150,16 +151,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await writeCollection('docProgress', next);
   }, []);
 
-  const updateSettings = useCallback(
-    async (patch: Partial<AppSettings>) => {
-      setSettings((prev) => {
-        const next = { ...prev, ...patch };
-        writeDoc('settings', next);
-        return next;
-      });
-    },
-    [],
-  );
+  // Mirror settings in a ref so updateSettings can merge patches without a stale
+  // closure and without performing the (side-effecting) write inside a state
+  // updater — the latter double-fires under React StrictMode.
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  const updateSettings = useCallback(async (patch: Partial<AppSettings>) => {
+    const next = { ...settingsRef.current, ...patch };
+    settingsRef.current = next;
+    setSettings(next);
+    await writeDoc('settings', next);
+  }, []);
 
   const completeOnboarding = useCallback(
     async (name: string) => {

@@ -41,7 +41,7 @@ export default function DocumentDetailScreen({ navigation, route }: any) {
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScreenModalHeader title={tpl.title[language]} onClose={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={{ padding: theme.spacing(2), gap: theme.spacing(1.5), paddingBottom: theme.spacing(6) }}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: theme.spacing(2), gap: theme.spacing(1.5), paddingBottom: theme.spacing(6) }}>
         <Card style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing(1.5) }}>
           <IconCircle icon={tpl.icon as any} color={theme.colors.accent} />
           <View style={{ flex: 1 }}>

@@ -165,6 +165,13 @@ const en = {
 
   'share.reminderText': 'Reminder from KaamMitra',
   'share.summaryText': 'My KaamMitra summary',
+
+  'error.amount': 'Enter an amount between ₹1 and ₹1,00,00,000',
+  'error.person': 'Enter a name',
+  'error.title': 'Type something first',
+  'error.saveFailed': 'Could not save. Please try again.',
+  'error.needAmount': 'Add an amount to continue',
+  'common.saving': 'Saving…',
 };
 
 const hi: Record<TranslationKey, string> = {
@@ -326,6 +333,13 @@ const hi: Record<TranslationKey, string> = {
 
   'share.reminderText': 'काममित्र से रिमाइंडर',
   'share.summaryText': 'मेरा काममित्र सारांश',
+
+  'error.amount': '₹1 से ₹1,00,00,000 के बीच रकम डालें',
+  'error.person': 'नाम डालें',
+  'error.title': 'पहले कुछ लिखें',
+  'error.saveFailed': 'सेव नहीं हुआ। फिर कोशिश करें।',
+  'error.needAmount': 'आगे बढ़ने के लिए रकम डालें',
+  'common.saving': 'सेव हो रहा है…',
 };
 
 const mr: Record<TranslationKey, string> = {
@@ -487,6 +501,13 @@ const mr: Record<TranslationKey, string> = {
 
   'share.reminderText': 'काममित्र कडून रिमाइंडर',
   'share.summaryText': 'माझा काममित्र आढावा',
+
+  'error.amount': '₹1 ते ₹1,00,00,000 दरम्यान रक्कम टाका',
+  'error.person': 'नाव टाका',
+  'error.title': 'आधी काहीतरी लिहा',
+  'error.saveFailed': 'सेव्ह झाले नाही. पुन्हा प्रयत्न करा.',
+  'error.needAmount': 'पुढे जाण्यासाठी रक्कम टाका',
+  'common.saving': 'सेव्ह होत आहे…',
 };
 
 export const translations: Record<LanguageCode, Record<TranslationKey, string>> = {

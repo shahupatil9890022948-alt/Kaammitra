@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Pressable, TextInput, View, ScrollView } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, TextInput, View, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useI18n } from '../i18n';
 import { useData } from '../state/DataContext';
+import { isValidAmount } from '../utils/validate';
+import { log } from '../utils/logger';
 import {
   Button,
   Card,
@@ -68,6 +70,8 @@ export default function VoiceScreen({ navigation }: any) {
   const [listening, setListening] = useState(false);
   const [exampleIndex, setExampleIndex] = useState(0);
   const [parsed, setParsed] = useState<ParsedResult | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Simulated speech-to-text: a real device plugs an ASR engine in here, but the
   // structured-action magic is the parser, which runs identically on the text.
@@ -84,22 +88,58 @@ export default function VoiceScreen({ navigation }: any) {
 
   const onParse = () => {
     if (!text.trim()) return;
+    setError(null);
     setParsed(parseInput(text));
   };
 
-  const onCreate = async () => {
-    if (!parsed) return;
-    await commitParsed(parsed);
-    navigation.goBack();
+  // Block commits that would create meaningless records; returns an error key.
+  const validateParsed = (p: ParsedResult): string | null => {
+    if ((p.kind === 'expense' || p.kind === 'udhaar') && !isValidAmount(p.amount ?? 0)) {
+      return t('error.needAmount');
+    }
+    if (p.kind === 'udhaar' && !(p.personName ?? '').trim()) {
+      return t('error.person');
+    }
+    if ((p.kind === 'reminder' || p.kind === 'business_note' || p.kind === 'document_task') && !(p.title ?? '').trim()) {
+      return t('error.title');
+    }
+    return null;
   };
 
-  const updateParsed = (patch: Partial<ParsedResult>) =>
+  const onCreate = async () => {
+    if (!parsed || saving) return; // duplicate-tap guard
+    const validationError = validateParsed(parsed);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setError(null);
+    setSaving(true);
+    try {
+      await commitParsed(parsed);
+      navigation.goBack();
+    } catch (e) {
+      log.error('voice', 'commit failed', e);
+      setError(t('error.saveFailed'));
+      setSaving(false);
+    }
+  };
+
+  const updateParsed = (patch: Partial<ParsedResult>) => {
+    if (error) setError(null);
     setParsed((prev) => (prev ? { ...prev, ...patch } : prev));
+  };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScreenModalHeader title={t('voice.title')} onClose={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={{ padding: theme.spacing(2), paddingBottom: theme.spacing(6) }}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: theme.spacing(2), paddingBottom: theme.spacing(6) }}
+      >
         <ThemedText variant="caption" color={theme.colors.textMuted} style={{ textAlign: 'center' }}>
           {t('voice.hint')}
         </ThemedText>
@@ -161,6 +201,7 @@ export default function VoiceScreen({ navigation }: any) {
                 <Pressable
                   key={ex}
                   onPress={() => {
+                    setError(null);
                     setText(ex);
                     setParsed(parseInput(ex));
                   }}
@@ -180,23 +221,29 @@ export default function VoiceScreen({ navigation }: any) {
         {parsed && (
           <ParsedPreview
             parsed={parsed}
+            saving={saving}
+            error={error}
             onChange={updateParsed}
             onCreate={onCreate}
             onQuickDate={(opt) => updateParsed({ dueAt: quickDate(opt), reminderTime: quickDate(opt) })}
           />
         )}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 function ParsedPreview({
   parsed,
+  saving,
+  error,
   onChange,
   onCreate,
   onQuickDate,
 }: {
   parsed: ParsedResult;
+  saving: boolean;
+  error: string | null;
   onChange: (p: Partial<ParsedResult>) => void;
   onCreate: () => void;
   onQuickDate: (opt: 'today' | 'tomorrow' | 'evening' | 'weekend') => void;
@@ -340,7 +387,17 @@ function ParsedPreview({
         </Field>
       )}
 
-      <Button label={t('voice.create')} icon="checkmark-circle-outline" onPress={onCreate} style={{ marginTop: theme.spacing(1) }} />
+      {error && (
+        <ThemedText variant="caption" color={theme.colors.danger}>⚠ {error}</ThemedText>
+      )}
+
+      <Button
+        label={saving ? t('common.saving') : t('voice.create')}
+        icon="checkmark-circle-outline"
+        onPress={onCreate}
+        loading={saving}
+        style={{ marginTop: theme.spacing(1) }}
+      />
     </Card>
   );
 }

@@ -74,14 +74,14 @@ export default function ExpensesScreen({ navigation }: any) {
         </View>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: theme.spacing(1), padding: theme.spacing(2) }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: theme.spacing(1), padding: theme.spacing(2) }}>
         <Chip label={t('common.all')} active={cat === 'all'} onPress={() => setCat('all')} />
         {EXPENSE_CATEGORIES.map((c) => (
           <Chip key={c} label={t(EXPENSE_CATEGORY_META[c].labelKey)} icon={EXPENSE_CATEGORY_META[c].icon as any} color={EXPENSE_CATEGORY_META[c].color(theme.colors)} active={cat === c} onPress={() => setCat(c)} />
         ))}
       </ScrollView>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: theme.spacing(2), paddingBottom: theme.spacing(16), gap: theme.spacing(1) }}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: theme.spacing(2), paddingBottom: theme.spacing(16), gap: theme.spacing(1) }}>
         {filtered.length === 0 ? (
           <EmptyState icon="wallet-outline" text={t('expenses.empty')} />
         ) : (

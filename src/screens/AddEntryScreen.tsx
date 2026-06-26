@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useI18n } from '../i18n';
 import { useData } from '../state/DataContext';
@@ -15,6 +15,8 @@ import {
   ReminderCategory,
   UdhaarDirection,
 } from '../models/types';
+import { isValidAmount, parseAmount } from '../utils/validate';
+import { log } from '../utils/logger';
 
 type Mode = 'reminder' | 'expense' | 'udhaar' | 'note';
 
@@ -60,6 +62,8 @@ export default function AddEntryScreen({ navigation, route }: any) {
   const [expenseCat, setExpenseCat] = useState<ExpenseCategory>('other');
   const [direction, setDirection] = useState<UdhaarDirection>('given');
   const [dueAt, setDueAt] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const titles: Record<Mode, string> = {
     reminder: t('reminders.addTitle'),
@@ -68,31 +72,57 @@ export default function AddEntryScreen({ navigation, route }: any) {
     note: t('business.addNote'),
   };
 
-  const canSave = (() => {
-    if (mode === 'reminder') return title.trim().length > 0;
-    if (mode === 'expense') return parseFloat(amount) > 0;
-    if (mode === 'udhaar') return person.trim().length > 0 && parseFloat(amount) > 0;
-    return title.trim().length > 0;
-  })();
+  const validate = (): string | null => {
+    if (mode === 'reminder' || mode === 'note') {
+      if (!title.trim()) return t('error.title');
+    }
+    if (mode === 'expense') {
+      if (!isValidAmount(parseAmount(amount))) return t('error.amount');
+    }
+    if (mode === 'udhaar') {
+      if (!person.trim()) return t('error.person');
+      if (!isValidAmount(parseAmount(amount))) return t('error.amount');
+    }
+    return null;
+  };
 
   const onSave = async () => {
-    if (!canSave) return;
-    if (mode === 'reminder') {
-      await addReminder({ title: title.trim(), category: reminderCat, dueAt, note: note.trim() || undefined });
-    } else if (mode === 'expense') {
-      await addExpense({ amount: parseFloat(amount), category: expenseCat, note: note.trim() || undefined });
-    } else if (mode === 'udhaar') {
-      await addUdhaar({ personName: person.trim(), amount: parseFloat(amount), direction, dueAt, note: note.trim() || undefined });
-    } else {
-      await addNote({ title: title.trim(), body: note.trim() || undefined });
+    if (saving) return; // duplicate-tap guard
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
     }
-    navigation.goBack();
+    setError(null);
+    setSaving(true);
+    try {
+      if (mode === 'reminder') {
+        await addReminder({ title: title.trim(), category: reminderCat, dueAt, note: note.trim() || undefined });
+      } else if (mode === 'expense') {
+        await addExpense({ amount: parseAmount(amount), category: expenseCat, note: note.trim() || undefined });
+      } else if (mode === 'udhaar') {
+        await addUdhaar({ personName: person.trim(), amount: parseAmount(amount), direction, dueAt, note: note.trim() || undefined });
+      } else {
+        await addNote({ title: title.trim(), body: note.trim() || undefined });
+      }
+      navigation.goBack();
+    } catch (e) {
+      log.error('add-entry', `save failed (${mode})`, e);
+      setError(t('error.saveFailed'));
+      setSaving(false);
+    }
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScreenModalHeader title={titles[mode]} onClose={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={{ padding: theme.spacing(2), gap: theme.spacing(2), paddingBottom: theme.spacing(6) }}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: theme.spacing(2), gap: theme.spacing(2), paddingBottom: theme.spacing(6) }}
+      >
         <Card style={{ gap: theme.spacing(2) }}>
           {mode === 'expense' && (
             <View style={{ alignItems: 'center', gap: 4 }}>
@@ -103,8 +133,9 @@ export default function AddEntryScreen({ navigation, route }: any) {
                 <ThemedText variant="display" color={theme.colors.primary}>₹</ThemedText>
                 <TextInput
                   value={amount}
-                  onChangeText={setAmount}
+                  onChangeText={(v) => { setAmount(v); if (error) setError(null); }}
                   keyboardType="numeric"
+                  maxLength={9}
                   placeholder="0"
                   placeholderTextColor={theme.colors.textMuted}
                   autoFocus
@@ -122,17 +153,17 @@ export default function AddEntryScreen({ navigation, route }: any) {
 
           {(mode === 'reminder' || mode === 'note') && (
             <Field label={t('common.title')}>
-              <TextInput value={title} onChangeText={setTitle} style={inputStyle(theme)} placeholder={t('common.title')} placeholderTextColor={theme.colors.textMuted} autoFocus />
+              <TextInput value={title} onChangeText={(v) => { setTitle(v); if (error) setError(null); }} style={inputStyle(theme)} placeholder={t('common.title')} placeholderTextColor={theme.colors.textMuted} autoFocus />
             </Field>
           )}
 
           {mode === 'udhaar' && (
             <>
               <Field label={t('business.personName')}>
-                <TextInput value={person} onChangeText={setPerson} style={inputStyle(theme)} placeholder={t('business.personName')} placeholderTextColor={theme.colors.textMuted} autoFocus />
+                <TextInput value={person} onChangeText={(v) => { setPerson(v); if (error) setError(null); }} style={inputStyle(theme)} placeholder={t('business.personName')} placeholderTextColor={theme.colors.textMuted} autoFocus />
               </Field>
               <Field label={t('common.amount')}>
-                <TextInput value={amount} onChangeText={setAmount} keyboardType="numeric" style={inputStyle(theme)} placeholder="0" placeholderTextColor={theme.colors.textMuted} />
+                <TextInput value={amount} onChangeText={(v) => { setAmount(v); if (error) setError(null); }} keyboardType="numeric" maxLength={9} style={inputStyle(theme)} placeholder="0" placeholderTextColor={theme.colors.textMuted} />
               </Field>
               <View style={{ flexDirection: 'row', gap: theme.spacing(1) }}>
                 {(['given', 'received'] as UdhaarDirection[]).map((dir) => (
@@ -183,9 +214,20 @@ export default function AddEntryScreen({ navigation, route }: any) {
           </Field>
         </Card>
 
-        <Button label={t('common.save')} icon="checkmark-circle-outline" onPress={onSave} disabled={!canSave} />
+        {error && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: theme.spacing(0.5) }}>
+            <ThemedText variant="caption" color={theme.colors.danger}>⚠ {error}</ThemedText>
+          </View>
+        )}
+
+        <Button
+          label={saving ? t('common.saving') : t('common.save')}
+          icon="checkmark-circle-outline"
+          onPress={onSave}
+          loading={saving}
+        />
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

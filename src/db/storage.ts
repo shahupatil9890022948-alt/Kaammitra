@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { log } from '../utils/logger';
 
 /**
  * Thin JSON-document store on top of AsyncStorage.
@@ -22,8 +23,14 @@ export async function readCollection<T>(name: string): Promise<T[]> {
   }
 }
 
-export async function writeCollection<T>(name: string, items: T[]): Promise<void> {
-  await AsyncStorage.setItem(PREFIX + name, JSON.stringify(items));
+export async function writeCollection<T>(name: string, items: T[]): Promise<boolean> {
+  try {
+    await AsyncStorage.setItem(PREFIX + name, JSON.stringify(items));
+    return true;
+  } catch (e) {
+    log.error('storage', `writeCollection failed: ${name}`, e);
+    return false;
+  }
 }
 
 export async function readDoc<T>(name: string): Promise<T | null> {
@@ -35,8 +42,14 @@ export async function readDoc<T>(name: string): Promise<T | null> {
   }
 }
 
-export async function writeDoc<T>(name: string, value: T): Promise<void> {
-  await AsyncStorage.setItem(PREFIX + name, JSON.stringify(value));
+export async function writeDoc<T>(name: string, value: T): Promise<boolean> {
+  try {
+    await AsyncStorage.setItem(PREFIX + name, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    log.error('storage', `writeDoc failed: ${name}`, e);
+    return false;
+  }
 }
 
 export async function clearAll(): Promise<void> {
