@@ -22,7 +22,7 @@ export default function TestimonialsPage() {
                   <Star key={star} className="size-4 fill-current" />
                 ))}
               </div>
-              <p className="leading-8 text-muted-foreground">"{review.text}"</p>
+              <p className="leading-8 text-muted-foreground">&ldquo;{review.text}&rdquo;</p>
               <p className="mt-5 font-semibold">{review.name}</p>
             </Card>
           ))}
