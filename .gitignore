@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+
+# Backtest generated outputs
+trades.csv
+results.csv
+equity_curve.csv
+equity_curve.png
+price_chart_*.png
+
+# Local testing data
+sample_data.csv
+sample_nosymbol.csv
