@@ -1,0 +1,17 @@
+{
+  "name": "Tanishka Ladies Beauty Parlour",
+  "short_name": "Tanishka",
+  "description": "Premium ladies beauty salon bookings, bridal packages and beauty offers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffaf4",
+  "theme_color": "#b76e79",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
