@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 32 100% 98%;
+  --foreground: 18 26% 7%;
+  --card: 0 0% 100%;
+  --card-foreground: 18 26% 7%;
+  --muted: 28 42% 92%;
+  --muted-foreground: 19 16% 36%;
+  --border: 24 30% 86%;
+  --primary: 351 30% 57%;
+  --primary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --background: 18 26% 7%;
+  --foreground: 32 100% 98%;
+  --card: 20 19% 12%;
+  --card-foreground: 32 100% 98%;
+  --muted: 18 16% 18%;
+  --muted-foreground: 28 24% 72%;
+  --border: 18 16% 20%;
+  --primary: 351 35% 66%;
+  --primary-foreground: 18 26% 7%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-poppins), sans-serif;
+}
+
+::selection {
+  background: rgba(183, 110, 121, 0.25);
+}
+
+.glass {
+  background: rgba(255, 250, 244, 0.72);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+}
+
+.dark .glass {
+  background: rgba(24, 16, 13, 0.72);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.luxury-border {
+  position: relative;
+}
+
+.luxury-border::before {
+  background: linear-gradient(135deg, rgba(183, 110, 121, 0.7), rgba(212, 175, 55, 0.7));
+  border-radius: inherit;
+  content: "";
+  inset: -1px;
+  opacity: 0.55;
+  position: absolute;
+  z-index: -1;
+}
+
+.masonry {
+  column-count: 1;
+  column-gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .masonry {
+    column-count: 3;
+  }
+}
+
+.masonry > * {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}

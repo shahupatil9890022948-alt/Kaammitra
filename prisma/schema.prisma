@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AppointmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  NOT_REQUIRED
+  ORDER_CREATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Appointment {
+  id             String            @id
+  serviceId      String
+  staffId        String
+  date           String
+  time           String
+  name           String
+  mobile         String
+  email          String
+  notes          String?
+  status         AppointmentStatus @default(PENDING)
+  paymentStatus  PaymentStatus     @default(NOT_REQUIRED)
+  paymentOrderId String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([staffId, date, time])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  mobile    String   @unique
+  email     String?
+  createdAt DateTime @default(now())
+}
+
+model Service {
+  id          String   @id
+  name        String
+  category    String
+  description String
+  duration    Int
+  price       Int
+  image       String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  title     String
+  category  String
+  imageUrl  String
+  createdAt DateTime @default(now())
+}
+
+model Offer {
+  id        String   @id @default(cuid())
+  title     String
+  value     String
+  detail    String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  text      String
+  rating    Int      @default(5)
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
