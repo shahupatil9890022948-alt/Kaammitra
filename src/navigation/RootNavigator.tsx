@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useI18n } from '../i18n';
@@ -33,6 +34,7 @@ const TAB_ICON: Record<string, { on: keyof typeof Ionicons.glyphMap; off: keyof 
 function MainTabs() {
   const theme = useTheme();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
   const labels: Record<string, string> = {
     Home: t('tab.home'),
     Reminders: t('tab.reminders'),
@@ -50,8 +52,9 @@ function MainTabs() {
         tabBarStyle: {
           backgroundColor: theme.colors.tabBar,
           borderTopColor: theme.colors.border,
-          height: 64,
-          paddingBottom: 8,
+          // Add the system gesture/nav-bar inset so tabs aren't hidden behind it.
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
           paddingTop: 6,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },

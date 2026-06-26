@@ -16,6 +16,7 @@ import {
   UdhaarDirection,
 } from '../models/types';
 import { isValidAmount, parseAmount } from '../utils/validate';
+import { formatDateTime } from '../utils/format';
 import { log } from '../utils/logger';
 
 type Mode = 'reminder' | 'expense' | 'udhaar' | 'note';
@@ -51,7 +52,7 @@ function inputStyle(theme: ReturnType<typeof useTheme>) {
 export default function AddEntryScreen({ navigation, route }: any) {
   const mode: Mode = route?.params?.mode ?? 'reminder';
   const theme = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { addReminder, addExpense, addUdhaar, addNote } = useData();
 
   const [title, setTitle] = useState('');
@@ -203,7 +204,7 @@ export default function AddEntryScreen({ navigation, route }: any) {
               </View>
               {dueAt && (
                 <ThemedText variant="caption" color={theme.colors.success} style={{ marginTop: 6 }}>
-                  ✓ {new Date(dueAt).toLocaleString('en-IN')}
+                  ✓ {formatDateTime(dueAt, language)}
                 </ThemedText>
               )}
             </Field>

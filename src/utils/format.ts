@@ -1,8 +1,23 @@
 import { LanguageCode } from '../models/types';
 
+/**
+ * Indian-style grouping (e.g. 12,34,567) without relying on Intl/`toLocaleString`,
+ * because Hermes on many budget Android phones ships a limited ICU and may not
+ * group `en-IN` correctly. Pure string math = same output on every device.
+ */
 export function formatCurrency(amount: number): string {
-  const rounded = Math.round(amount);
-  return `₹${rounded.toLocaleString('en-IN')}`;
+  const safe = Number.isFinite(amount) ? amount : 0;
+  const negative = safe < 0;
+  const digits = String(Math.round(Math.abs(safe)));
+  let grouped: string;
+  if (digits.length <= 3) {
+    grouped = digits;
+  } else {
+    const last3 = digits.slice(-3);
+    const rest = digits.slice(0, -3);
+    grouped = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3;
+  }
+  return `${negative ? '-' : ''}₹${grouped}`;
 }
 
 const LOCALES: Record<LanguageCode, string> = {

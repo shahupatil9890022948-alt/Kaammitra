@@ -5,6 +5,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useI18n } from '../i18n';
 import { useData } from '../state/DataContext';
 import { isValidAmount } from '../utils/validate';
+import { formatDateTime } from '../utils/format';
 import { log } from '../utils/logger';
 import {
   Button,
@@ -381,7 +382,7 @@ function ParsedPreview({
           </View>
           {parsed.dueAt ? (
             <ThemedText variant="caption" color={theme.colors.success} style={{ marginTop: 6 }}>
-              ✓ {new Date(parsed.dueAt).toLocaleString(language === 'en' ? 'en-IN' : language + '-IN')}
+              ✓ {formatDateTime(parsed.dueAt, language)}
             </ThemedText>
           ) : null}
         </Field>

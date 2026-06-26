@@ -5,6 +5,7 @@ import { DataProvider, useData } from './src/state/DataContext';
 import { ThemeProvider } from './src/theme/ThemeContext';
 import { I18nProvider } from './src/i18n';
 import RootNavigator from './src/navigation/RootNavigator';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 
 /**
  * Providers read live settings (language + theme) from the data store so the
@@ -24,10 +25,12 @@ function ThemedApp() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <DataProvider>
-        <ThemedApp />
-      </DataProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <DataProvider>
+          <ThemedApp />
+        </DataProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
