@@ -115,9 +115,11 @@ function extractDueAt(norm: string): number | null {
   const now = new Date();
   let day: Date | null = null;
 
-  if (/\b(aaj|आज|today)\b/.test(norm)) day = new Date(now);
-  else if (/\b(kal|कल|उद्या|tomorrow)\b/.test(norm)) day = addDays(now, 1);
-  else if (/\b(parso|परसों|परवा|day after)\b/.test(norm)) day = addDays(now, 2);
+  // NOTE: avoid \b word boundaries here — they are ASCII-only and never match
+  // Devanagari (कल/आज/उद्या), so Hindi/Marathi dates would silently fail.
+  if (containsAny(norm, ['aaj', 'आज', 'today'])) day = new Date(now);
+  else if (containsAny(norm, ['kal', 'कल', 'उद्या', 'tomorrow'])) day = addDays(now, 1);
+  else if (containsAny(norm, ['parso', 'परसों', 'परवा', 'day after'])) day = addDays(now, 2);
   else {
     for (const [name, dow] of Object.entries(WEEKDAYS)) {
       if (norm.includes(` ${name} `)) {
@@ -200,7 +202,9 @@ export function parseInput(rawInput: string): ParsedResult {
   const amount = extractAmount(raw);
   const dueAt = extractDueAt(norm);
 
-  const hasReminder = containsAny(norm, REMINDER_HINTS) || /\b(kal|aaj|parso|tomorrow|today|उद्या|कल|आज)\b/.test(norm);
+  const hasReminder =
+    containsAny(norm, REMINDER_HINTS) ||
+    containsAny(norm, ['kal', 'aaj', 'parso', 'tomorrow', 'today', 'उद्या', 'कल', 'आज', 'परसों', 'परवा']);
   const hasUdhaar = containsAny(norm, UDHAAR_HINTS);
   const hasDocument = containsAny(norm, DOCUMENT_HINTS);
   const hasExpense = containsAny(norm, EXPENSE_HINTS);

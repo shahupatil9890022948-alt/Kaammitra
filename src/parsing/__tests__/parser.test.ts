@@ -48,6 +48,14 @@ test('hindi reminder: "कल बिजली बिल भरना याद �
   const r = parseInput('कल बिजली बिल भरना याद दिलाना');
   assert.equal(r.kind, 'reminder');
   assert.equal(r.category, 'bills');
+  // "कल" (Devanagari "tomorrow") must resolve a future date despite ASCII \b.
+  assert.ok(r.dueAt && r.dueAt > Date.now(), 'Devanagari date word should resolve a due date');
+});
+
+test('marathi reminder date: "उद्या डॉक्टर ला भेटायचं आठवण कर"', () => {
+  const r = parseInput('उद्या डॉक्टर ला भेटायचं आठवण कर');
+  assert.equal(r.kind, 'reminder');
+  assert.ok(r.dueAt && r.dueAt > Date.now(), 'Marathi "उद्या" should resolve tomorrow');
 });
 
 test('marathi expense: "आज 120 भाजी खर्च झाले"', () => {
