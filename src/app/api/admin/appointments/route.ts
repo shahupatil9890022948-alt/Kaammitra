@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { AppointmentStatus, type Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 type MemoryAppointment = {
@@ -46,13 +47,16 @@ export async function PATCH(request: Request) {
   }
 
   if (process.env.DATABASE_URL) {
+    const data: Prisma.AppointmentUpdateInput = {};
+    if (body.status && Object.values(AppointmentStatus).includes(body.status as AppointmentStatus)) {
+      data.status = body.status as AppointmentStatus;
+    }
+    if (body.date) data.date = body.date;
+    if (body.time) data.time = body.time;
+
     const appointment = await prisma.appointment.update({
       where: { id: body.id },
-      data: {
-        status: body.status,
-        date: body.date,
-        time: body.time
-      }
+      data
     });
     return NextResponse.json({ appointment });
   }

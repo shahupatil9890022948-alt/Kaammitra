@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Facebook, Instagram, Mail, MapPin, Phone, Sparkles } from "lucide-react";
+import { Camera, Mail, MapPin, MessageCircle, Phone, Sparkles } from "lucide-react";
 import { business, navItems } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 
@@ -68,8 +68,8 @@ export function SiteFooter() {
               <MapPin className="mt-0.5 size-4" /> {business.address}
             </span>
             <div className="flex gap-3 pt-2">
-              <Instagram className="size-5" />
-              <Facebook className="size-5" />
+              <Camera className="size-5" />
+              <MessageCircle className="size-5" />
             </div>
           </div>
         </div>
