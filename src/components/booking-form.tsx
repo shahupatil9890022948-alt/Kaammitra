@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, CheckCircle2, CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { type Resolver, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { services, staff, timeSlots } from "@/lib/data";
 import { createWhatsAppUrl, formatCurrency } from "@/lib/utils";
@@ -24,7 +24,7 @@ export function BookingForm({ initialService }: { initialService?: string }) {
   const today = new Date().toISOString().slice(0, 10);
 
   const form = useForm<AppointmentInput>({
-    resolver: zodResolver(appointmentSchema),
+    resolver: zodResolver(appointmentSchema) as Resolver<AppointmentInput>,
     defaultValues: {
       serviceId: initialService ?? services[0].id,
       staffId: staff[0].id,
